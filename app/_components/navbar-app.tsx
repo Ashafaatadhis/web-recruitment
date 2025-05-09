@@ -11,8 +11,10 @@ import {
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export function NavbarApp() {
+  const { data: session } = useSession();
   const navItems = [
     {
       name: "Features",
@@ -30,6 +32,14 @@ export function NavbarApp() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleAuthClick = () => {
+    if (session) {
+      signOut();
+    } else {
+      window.location.href = "/login";
+    }
+  };
+
   return (
     <div className="w-full sticky top-0 z-50 bg-white dark:bg-black">
       <Navbar>
@@ -38,7 +48,9 @@ export function NavbarApp() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
+            <NavbarButton variant="secondary" onClick={handleAuthClick}>
+              {session ? "Logout" : "Login"}
+            </NavbarButton>
             <NavbarButton variant="primary">Book a call</NavbarButton>
           </div>
         </NavBody>
