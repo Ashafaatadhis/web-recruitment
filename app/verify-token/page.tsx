@@ -1,13 +1,12 @@
-// /app/login/page.tsx
+// /app/register/page.tsx
 
 "use client";
 
-import z from "zod";
-
 import { GalleryVerticalEnd } from "lucide-react";
-import { LoginForm } from "./_components/login-form";
 
-export default function LoginPage() {
+import VerifyToken from "./_components/verify-token";
+
+const RegisterPage = () => {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
@@ -17,8 +16,10 @@ export default function LoginPage() {
           </div>
           Inthernals.
         </a>
-        <LoginForm />
+        <VerifyToken />
       </div>
     </div>
   );
-}
+};
+
+export default RegisterPage;

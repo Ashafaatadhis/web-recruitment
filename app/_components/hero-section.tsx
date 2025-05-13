@@ -6,7 +6,7 @@ export function HeroSection() {
     <section className="container mx-auto flex flex-col lg:flex-row px-4 sm:px-6 lg:px-14 items-center gap-8 py-12">
       <div className="w-full lg:w-1/2 text-center lg:text-left">
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-          Innovative <span className="text-blue-600">Solutions for Your</span>{" "}
+          Innovative <span className="text-primary">Solutions for Your</span>{" "}
           Business
         </h1>
         <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0 mb-8">
@@ -14,9 +14,9 @@ export function HeroSection() {
           products
         </p>
         <Button
-          className="bg-blue-600 hover:bg-blue-600 text-lg px-8 py-5 rounded-3xl relative 
+          className="bg-primary hover:bg-primary text-lg px-8 py-5 rounded-3xl relative 
                   before:absolute hover:before:inset-[-4px] before:inset-[-6px] before:rounded-[calc(1.5rem+4px)] 
-                  before:border-2 before:border-blue-400 before:opacity-70 
+                  before:border-2 before:border-primary before:opacity-70 
                   hover:before:opacity-100 before:transition-opacity 
                   hover:scale-105 transition-transform duration-300"
         >

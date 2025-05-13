@@ -15,6 +15,20 @@
       "when": 1746779115757,
       "tag": "0001_closed_captain_flint",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746985587523,
+      "tag": "0002_familiar_microbe",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1747091155901,
+      "tag": "0003_thick_franklin_storm",
+      "breakpoints": true
     }
   ]
 }
