@@ -48,25 +48,25 @@ export default {
         }
 
         const user = await db.query.users.findFirst({
-          where: eq(users.email, email), // Query by email
+          where: eq(users.email, email),
         });
 
         if (!user) {
-          throw new UserNotFoundError(); // "user_not_found"
+          throw new UserNotFoundError();
         }
 
         if (!user.password) {
-          throw new InvalidAccountError(); // "invalid_account"
+          throw new InvalidAccountError();
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-          throw new InvalidPasswordError(); // "invalid_password"
+          throw new InvalidPasswordError();
         }
 
         if (!user.emailVerified) {
-          throw new EmailNotVerifiedError(); // "EmailNotVerified"
+          throw new EmailNotVerifiedError();
         }
 
         return {
@@ -74,6 +74,7 @@ export default {
           name: user.name,
           email: user.email,
           image: user.image,
+          role: user.role, // Add this line to include role
         };
       },
     }),
@@ -83,17 +84,43 @@ export default {
     error: "/auth/error", // Add an error page for better error handling
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // Handle initial sign in
       if (user) {
-        token.id = user.id;
+        return {
+          ...token,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: user.role,
+        };
       }
+
+      // Handle session updates
+      if (trigger === "update" && session?.user) {
+        return {
+          ...token,
+          ...session.user,
+          // Ensure role is preserved if not in session update
+          role: session.user.role || token.role,
+        };
+      }
+
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
-      }
-      return session;
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.id as string,
+          name: token.name as string,
+          email: token.email as string,
+          image: token.image as string,
+          role: token.role as string,
+        },
+      };
     },
     // Add this new callback to handle account linking
     async signIn({ user, account, profile }) {

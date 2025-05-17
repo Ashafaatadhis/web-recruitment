@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { verifyTokenAction } from "../action";
+
 import {
   InputOTP,
   InputOTPGroup,
@@ -17,7 +16,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import jwt from "jsonwebtoken";
 import { cn } from "@/lib/utils";
+import { resendVerificationAction, verifyTokenAction } from "../action";
+import { useEffect, useState, Suspense } from "react";
 
 export default function VerifyToken({
   className,
@@ -27,6 +29,51 @@ export default function VerifyToken({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [cooldown, setCooldown] = useState(0);
+
+  const handleResend = async () => {
+    setIsLoading(true);
+    try {
+      const jwtToken = searchParams?.get("token");
+      if (!jwtToken) {
+        toast.error("Missing verification token.");
+        return;
+      }
+
+      const decoded = jwt.decode(jwtToken);
+      if (!decoded || typeof decoded === "string") {
+        toast.error("Invalid token");
+        return;
+      }
+
+      const result = await resendVerificationAction(decoded.id);
+
+      if (result.status) {
+        toast.success("New verification code sent!");
+        setCooldown(30); // Initialize client-side cooldown
+      } else {
+        if (result.cooldown) {
+          setCooldown(result.cooldown);
+        }
+        toast.error(result.error || "Failed to resend code");
+      }
+    } catch (error) {
+      toast.error("Error resending code");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,6 +140,12 @@ export default function VerifyToken({
                 )}
               </Button>
             </form>
+            <p
+              onClick={handleResend}
+              className="text-blue-600 text-sm mt-1 text-center hover:underline"
+            >
+              Resend verification code
+            </p>
           </CardContent>
         </Card>
       </div>

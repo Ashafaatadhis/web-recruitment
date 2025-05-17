@@ -38,6 +38,7 @@ export const users = pgTable("user", {
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date()), // Added $onUpdate
+  lastVerificationRequest: timestamp("last_verification_request"),
 });
 
 export const accounts = pgTable(
@@ -186,6 +187,17 @@ export const applicationStatusHistories = pgTable(
 );
 
 // New table for recruiter verification submissions
+// First add this enum definition at the top with other imports
+import { pgEnum } from "drizzle-orm/pg-core";
+
+// Add enum definition
+export const verificationStatusEnum = pgEnum("verification_status", [
+  "none",
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 export const recruiterVerificationSubmissions = pgTable(
   "recruiter_verification_submission",
   {
@@ -197,7 +209,7 @@ export const recruiterVerificationSubmissions = pgTable(
       .references(() => users.id, { onDelete: "cascade" }), // User with 'recruiter' role
     documentUrl: text("document_url").notNull(), // URL of the uploaded verification document
     submissionNotes: text("submission_notes"), // Optional notes from the recruiter
-    status: text("status").default("pending").notNull(), // 'pending', 'approved', 'rejected'
+    status: verificationStatusEnum("status").default("pending").notNull(), // 'pending', 'approved', 'rejected'
     adminReviewerId: text("admin_reviewer_id").references(() => users.id, {
       onDelete: "set null",
     }), // User with 'admin' role who reviewed

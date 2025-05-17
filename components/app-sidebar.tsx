@@ -1,5 +1,7 @@
 "use client";
 
+import { useAbility } from "@/lib/casl/AbilityContext";
+import { navigationItems } from "@/config/navigation";
 import * as React from "react";
 import {
   BookOpen,
@@ -17,7 +19,7 @@ import {
 import type { User } from "next-auth"; // Import User type for the prop
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -30,133 +32,43 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
-
-const data = {
-  // user: { ... } // This part of the static data is no longer needed for NavUser
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-};
+import { Actions, Subjects } from "@/lib/casl/ability";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  user: User; // Define the user prop type
+  user: User;
 }
 
+// In AppSidebar component
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
-  // const { data: session } = useSession(); // Remove useSession
+  const ability = useAbility();
+
+  // Filter navigation items based on permissions
+  // In the filter functions, we need to properly type the action parameter
+  const filteredMainNav = navigationItems.main.filter((item) => {
+    if (!item.permission) return true;
+
+    const actions = Array.isArray(item.permission.action)
+      ? item.permission.action
+      : [item.permission.action];
+
+    const hasViewAction = actions.includes("view");
+
+    const canView = ability.can("view", item.permission.subject as Subjects);
+
+    return hasViewAction && canView;
+  });
+
+  const filteredSecondaryNav = navigationItems.secondary.filter((item) => {
+    if (!item.permission) return true;
+
+    const actions = Array.isArray(item.permission.action)
+      ? item.permission.action
+      : [item.permission.action];
+
+    if (!actions.includes("view")) return false;
+
+    return ability.can("view", item.permission.subject as Subjects);
+  });
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -183,9 +95,9 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={filteredMainNav} />
+        <NavSecondary items={filteredSecondaryNav} className="mt-auto" />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

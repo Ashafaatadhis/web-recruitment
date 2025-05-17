@@ -28,6 +28,7 @@ import {
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useState } from "react"; // Import useState
+import Link from "next/link";
 
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
@@ -86,23 +87,16 @@ export function NavUser({ user }: { user: User }) {
                 </div>
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/account">
+                  <BadgeCheck className="mr-2 h-4 w-4" />
+                  Account
+                </Link>
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
+
               <DropdownMenuItem>
                 <Bell />
                 Notifications

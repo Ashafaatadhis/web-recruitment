@@ -1,0 +1,3 @@
+CREATE TYPE "public"."verification_status" AS ENUM('none', 'pending', 'approved', 'rejected');--> statement-breakpoint
+ALTER TABLE "recruiter_verification_submission" ALTER COLUMN "status" SET DEFAULT 'pending'::"public"."verification_status";--> statement-breakpoint
+ALTER TABLE "recruiter_verification_submission" ALTER COLUMN "status" SET DATA TYPE "public"."verification_status" USING "status"::"public"."verification_status";
