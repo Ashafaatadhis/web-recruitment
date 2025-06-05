@@ -1,9 +1,3 @@
-// /app/login/page.tsx
-
-"use client";
-
-import z from "zod";
-
 import { GalleryVerticalEnd } from "lucide-react";
 import { LoginForm } from "./_components/login-form";
 

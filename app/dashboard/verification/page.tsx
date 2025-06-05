@@ -1,5 +1,3 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { VerificationClient } from "./_components/verification-client";
 
 export default async function VerificationPage() {

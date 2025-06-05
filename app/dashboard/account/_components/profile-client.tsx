@@ -1,105 +1,66 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProfileForm } from "./profile-form";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { updateUserProfile } from "./action";
-import { toast } from "sonner";
+import { ProfileSkeleton } from "./profile-skeleton";
+
+import { useTemporaryImageCleanup } from "@/hooks/use-temporary-image-cleanup";
+import { deleteImage } from "@/lib/utils/image-upload";
+import { updateUserProfile } from "@/actions/user/update-profile";
 
 export function ProfileClient() {
   const { data: session, update, status } = useSession();
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [temporaryImage, setTemporaryImage] = useState<string | null>(null);
+  const [committedImage, setCommittedImage] = useState<string>(
+    session?.user?.image ?? ""
+  );
+  // Auto-cleanup if user reloads or leaves without saving
+  useTemporaryImageCleanup(temporaryImage);
 
   const handleProfileUpdate = async (name: string) => {
-    try {
-      if (!session?.user?.id) {
-        toast.error("User ID not found");
-        return;
-      }
+    const newImage = temporaryImage || committedImage;
 
-      const result = await updateUserProfile({
-        id: session?.user?.id,
-        name,
-        // Use existing image if avatarUrl is null
-        image: avatarUrl ?? session.user?.image ?? null,
-      });
+    const result = await updateUserProfile({
+      id: session?.user?.id!,
+      name,
+      image: newImage,
+    });
 
-      setAvatarUrl(null);
-
-      if (result.error) {
-        toast.error(result.message);
-        return;
-      }
-
-      toast.success(result.message);
-
-      await update({
-        user: {
-          name,
-          // Use existing image if avatarUrl is null
-          image: avatarUrl || session.user.image,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to update profile:", error);
+    if (!result.error) {
+      setCommittedImage(newImage); // commit
+      deleteImage(committedImage); // delete temp image if exists
+      setTemporaryImage(null); // clear temp
+      await update({ user: { name, image: newImage } });
     }
   };
 
   const handleAvatarChange = (url: string) => {
-    // Store the new avatar URL temporarily
-    setAvatarUrl(url);
+    deleteImage(temporaryImage ?? "");
+    setTemporaryImage(url);
   };
 
-  if (status === "loading") {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-20 w-20 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-48" />
-            <Skeleton className="h-5 w-16 mt-1" />
-          </div>
-        </div>
-        <Skeleton className="h-px w-full" /> {/* Separator skeleton */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-3/4" />
-          </div>
-
-          <Skeleton className="h-10 w-24" />
-        </div>
-      </div>
-    );
-  }
-
+  if (status === "loading") return <ProfileSkeleton />;
   if (!session) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <ProfileAvatar
-          currentImage={session.user?.image || ""}
+          currentImage={session.user.image || ""}
           onImageChange={handleAvatarChange}
-          userName={session.user?.name || ""}
+          userName={session.user.name || ""}
         />
-
         <div>
-          <h3 className="font-medium">{session.user?.name}</h3>
-          <p className="text-sm text-muted-foreground">{session.user?.email}</p>
+          <h3 className="font-medium">{session.user.name}</h3>
+          <p className="text-sm text-muted-foreground">{session.user.email}</p>
           <div className="mt-2">
-            <Badge variant="outline">{session.user?.role}</Badge>
+            <Badge variant="outline">{session.user.role}</Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
             Click on the avatar to change your profile picture
@@ -108,14 +69,12 @@ export function ProfileClient() {
       </div>
 
       <Separator />
-      {session?.user?.name}
+
       <ProfileForm
-        initialName={session.user?.name || ""}
-        initialEmail={session.user?.email || ""}
-        onSubmit={async (name: string) => {
-          await handleProfileUpdate(name);
-        }}
-        hasAvatarChanges={!!avatarUrl}
+        initialName={session.user.name || ""}
+        initialEmail={session.user.email || ""}
+        onSubmit={handleProfileUpdate}
+        hasAvatarChanges={!!temporaryImage}
       />
     </div>
   );

@@ -43,6 +43,48 @@
       "when": 1747431076498,
       "tag": "0005_amusing_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1748071274435,
+      "tag": "0006_eminent_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748077313165,
+      "tag": "0007_right_firebird",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1748088903056,
+      "tag": "0008_lethal_molten_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1748113247993,
+      "tag": "0009_common_giant_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1748113685681,
+      "tag": "0010_left_hannibal_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1748114127429,
+      "tag": "0011_easy_jazinda",
+      "breakpoints": true
     }
   ]
 }

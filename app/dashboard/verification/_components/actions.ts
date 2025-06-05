@@ -7,6 +7,29 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { VerificationStatus } from "@/types/verification-types";
 
+export async function fetchVerificationRequestsById(id: string) {
+  try {
+    const requests = await db.query.recruiterVerificationSubmissions.findMany({
+      where: eq(recruiterVerificationSubmissions.id, id),
+      with: {
+        recruiterUser: {
+          columns: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: (submissions) => submissions.submittedAt,
+    });
+
+    return requests;
+  } catch (error) {
+    console.error("Error fetching verification requests detail:", error);
+    throw new Error("Failed to fetch verification requests detail");
+  }
+}
 export async function fetchVerificationRequests(status: VerificationStatus) {
   try {
     const requests = await db.query.recruiterVerificationSubmissions.findMany({

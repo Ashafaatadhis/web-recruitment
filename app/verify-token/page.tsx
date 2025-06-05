@@ -1,7 +1,3 @@
-// /app/register/page.tsx
-
-"use client";
-
 import { GalleryVerticalEnd } from "lucide-react";
 
 import VerifyToken from "./_components/verify-token";

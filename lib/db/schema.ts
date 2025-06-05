@@ -30,6 +30,7 @@ export const users = pgTable("user", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   phoneNumber: text("phone_number"),
+  location: text("location"), // Add this line
   resumeUrl: text("resume_url"),
   coverLetter: text("cover_letter"), // Or this could be per application
   linkedInProfile: text("linkedin_profile"),
@@ -137,6 +138,17 @@ export const jobs = pgTable("job", {
 
 // The 'applicants' table is removed. Applicant data is now in the 'users' table.
 
+// Add this near other enum definitions (at the top with other imports)
+export const applicationStatusEnum = pgEnum("application_status", [
+  "Applied",
+  "Screening",
+  "Interview",
+  "Offer",
+  "Rejected",
+  "Hired",
+]);
+
+// Then modify the applications table definition
 export const applications = pgTable(
   "application",
   {
@@ -150,11 +162,12 @@ export const applications = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }), // References users table
     applicationDate: timestamp("application_date").defaultNow().notNull(),
-    status: text("status").default("Applied").notNull(), // e.g., 'Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Hired'
+    status: applicationStatusEnum("status").default("Applied").notNull(), // e.g., 'Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Hired'
     // Specific application details, if resume/cover letter are per application
     // resumeUrl: text("resume_url"),
     // coverLetter: text("cover_letter"),
     hrNotes: text("hr_notes"), // Internal notes by HR
+    createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date()),
@@ -234,9 +247,52 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
   }),
 }));
 
+export const jobsRelations = relations(jobs, ({ one, many }) => ({
+  postedBy: one(users, {
+    fields: [jobs.postedById],
+    references: [users.id],
+    relationName: "postedJobs",
+  }),
+  applications: many(applications),
+  questions: many(applicationQuestions), // Add this line
+}));
+
+// applicantsRelations is removed
+
+export const applicationsRelations = relations(
+  applications,
+  ({ one, many }) => ({
+    job: one(jobs, {
+      fields: [applications.jobId],
+      references: [jobs.id],
+    }),
+    applicant: one(users, {
+      fields: [applications.applicantUserId],
+      references: [users.id],
+      relationName: "userApplications",
+    }),
+    applicantUser: one(users, {
+      // Add this duplicate relation with different name
+      fields: [applications.applicantUserId],
+      references: [users.id],
+      relationName: "applicantUserRelation",
+    }),
+    statusHistory: many(applicationStatusHistories),
+    answers: many(applicationAnswers),
+  })
+);
+
+// Then update usersRelationsExtended to include both relations
 export const usersRelationsExtended = relations(users, ({ many }) => ({
   accounts: many(accounts),
   postedJobs: many(jobs, { relationName: "postedJobs" }),
+  applications: many(applications, { relationName: "userApplications" }),
+  skills: many(skills),
+  experiences: many(experiences), // Add this line
+
+  applicantApplications: many(applications, {
+    relationName: "applicantUserRelation",
+  }), // Add this
   submittedApplications: many(applications, {
     relationName: "submittedApplications",
   }), // User's applications
@@ -250,34 +306,6 @@ export const usersRelationsExtended = relations(users, ({ many }) => ({
     relationName: "adminReviewedSubmissions",
   }), // Admin's reviews
 }));
-
-export const jobsRelations = relations(jobs, ({ one, many }) => ({
-  postedBy: one(users, {
-    fields: [jobs.postedById],
-    references: [users.id],
-    relationName: "postedJobs",
-  }),
-  applications: many(applications),
-}));
-
-// applicantsRelations is removed
-
-export const applicationsRelations = relations(
-  applications,
-  ({ one, many }) => ({
-    job: one(jobs, {
-      fields: [applications.jobId],
-      references: [jobs.id],
-    }),
-    applicantUser: one(users, {
-      // Renamed from applicant to applicantUser
-      fields: [applications.applicantUserId], // Updated field name
-      references: [users.id],
-      relationName: "submittedApplications",
-    }),
-    statusHistory: many(applicationStatusHistories),
-  })
-);
 
 export const applicationStatusHistoriesRelations = relations(
   applicationStatusHistories,
@@ -310,3 +338,99 @@ export const recruiterVerificationSubmissionsRelations = relations(
     }),
   })
 );
+
+// Table for storing questions for each job
+export const applicationQuestions = pgTable("application_question", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  jobId: text("job_id")
+    .notNull()
+    .references(() => jobs.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  order: integer("order").default(0), // Optional: for ordering questions
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Table for storing answers for each application/question
+export const applicationAnswers = pgTable("application_answer", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  applicationId: text("application_id")
+    .notNull()
+    .references(() => applications.id, { onDelete: "cascade" }),
+  questionId: text("question_id")
+    .notNull()
+    .references(() => applicationQuestions.id, { onDelete: "cascade" }),
+  answer: text("answer").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Add relations for the new tables
+export const applicationQuestionsRelations = relations(
+  applicationQuestions,
+  ({ one, many }) => ({
+    job: one(jobs, {
+      fields: [applicationQuestions.jobId],
+      references: [jobs.id],
+    }),
+    answers: many(applicationAnswers),
+  })
+);
+
+export const applicationAnswersRelations = relations(
+  applicationAnswers,
+  ({ one }) => ({
+    application: one(applications, {
+      fields: [applicationAnswers.applicationId],
+      references: [applications.id],
+    }),
+    question: one(applicationQuestions, {
+      fields: [applicationAnswers.questionId],
+      references: [applicationQuestions.id],
+    }),
+  })
+);
+
+export const skills = pgTable("skill", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  userId: text("user_id") // Add this field
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const skillsRelations = relations(skills, ({ one }) => ({
+  user: one(users, {
+    fields: [skills.userId],
+    references: [users.id],
+  }),
+}));
+
+export const experiences = pgTable("experience", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  company: text("company").notNull(),
+  position: text("position").notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  isCurrent: boolean("is_current").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const experiencesRelations = relations(experiences, ({ one }) => ({
+  user: one(users, {
+    fields: [experiences.userId],
+    references: [users.id],
+  }),
+}));

@@ -35,7 +35,8 @@ export function DynamicBreadcrumb() {
           const isLast = index === array.length - 1;
           const href = `/dashboard/${pathSegments
             .slice(1, index + 2)
-            .join("/")}`;
+            .join("/")
+            .toLowerCase()}`;
 
           return (
             <React.Fragment key={segment}>

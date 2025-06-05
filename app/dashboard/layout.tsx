@@ -24,8 +24,6 @@ export default async function DashboardLayout({
   // Get user role from session
   const userRole = session.user.role;
 
-  console.log(session, " session");
-
   return (
     <AbilityProvider role={userRole}>
       <SidebarProvider>

@@ -3,42 +3,42 @@ import { AbilityBuilder, AbilityClass, PureAbility } from "@casl/ability";
 // Define your action types
 export type Actions =
   | "manage"
-  | "view"
   | "create"
   | "read"
   | "update"
-  | "delete";
+  | "delete"
+  | "view";
 
 // Define your subject types
-// Update Subjects type to include Verification
 export type Subjects =
   | "User"
   | "Job"
   | "Application"
   | "Profile"
+  | "My_Application"
   | "Verification"
-  | "Recruiter Verification"
-  | "Browse_Jobs"
-  | "Application_My"
   | "all";
+
+// Define the ability type
 export type AppAbility = PureAbility<[Actions, Subjects]>;
 const AppAbility = PureAbility as AbilityClass<AppAbility>;
-// Add permissions for recruiter role
+
+// Define permissions by role
 const rolePermissions: Record<
   string,
   Array<{ action: Actions | Actions[]; subject: Subjects }>
 > = {
-  admin: [{ action: "manage", subject: "all" }],
+  admin: [
+    { action: ["view", "read", "create", "delete", "update"], subject: "Job" },
+  ],
   recruiter: [
-    { action: ["view", "create", "read", "update", "delete"], subject: "Job" },
+    { action: ["view", "read"], subject: "Job" },
     { action: ["view", "read", "update"], subject: "Application" },
+
     { action: ["view", "read"], subject: "User" },
-    { action: "manage", subject: "Recruiter Verification" }, // Added verification management
   ],
   applicant: [
-    { action: ["view", "read"], subject: "Job" },
-    { action: ["view", "create", "read", "update"], subject: "Application_My" },
-    { action: ["view"], subject: "Browse_Jobs" },
+    { action: ["view", "create", "read", "update"], subject: "My_Application" },
     { action: ["view", "read", "update"], subject: "Profile" },
   ],
 };

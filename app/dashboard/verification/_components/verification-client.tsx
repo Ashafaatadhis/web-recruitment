@@ -21,6 +21,8 @@ import {
   VerificationRequest,
   VerificationStatus,
 } from "@/types/verification-types";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function VerificationClient() {
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
@@ -28,7 +30,57 @@ export function VerificationClient() {
   const [selectedRequest, setSelectedRequest] =
     useState<VerificationRequest | null>(null);
   const [activeTab, setActiveTab] = useState<VerificationStatus>("pending");
+  // Remove useRouter import and handler
+  // import { useRouter } from "next/navigation";
+  // const router = useRouter();
 
+  // Update the card component in the map function
+  {
+    requests.map((request) => (
+      <Link
+        key={request.id}
+        href={`/dashboard/verification/${request.id}`}
+        className="hover:shadow-lg transition-shadow"
+      >
+        <Card className="cursor-pointer">
+          <CardHeader className="flex flex-row items-center gap-4">
+            <Avatar>
+              <AvatarImage src={request.recruiterUser.image || undefined} />
+              <AvatarFallback>
+                {request.recruiterUser.name?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-1">
+              <CardTitle className="text-lg">
+                {request.recruiterUser.name}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {request.recruiterUser.email}
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Badge
+                variant={
+                  request.status === "pending"
+                    ? "secondary"
+                    : request.status === "approved"
+                    ? "default"
+                    : "destructive"
+                }
+              >
+                {request.status}
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                {format(new Date(request.submittedAt), "dd MMM yyyy")}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    ));
+  }
   useEffect(() => {
     loadRequests();
   }, [activeTab]);
@@ -67,14 +119,16 @@ export function VerificationClient() {
     }
   };
 
+  // Remove selectedRequest state
+  // const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
+
   return (
     <div className="space-y-6">
       <Tabs
-        defaultValue="pending"
         value={activeTab}
         onValueChange={(value) => setActiveTab(value as VerificationStatus)}
       >
-        <TabsList>
+        <TabsList className="grid grid-cols-3 w-[400px]">
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
@@ -82,7 +136,7 @@ export function VerificationClient() {
 
         <TabsContent value={activeTab} className="mt-6">
           {loading ? (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
                 <Card key={i}>
                   <CardHeader className="flex flex-row items-center gap-4">
@@ -100,16 +154,13 @@ export function VerificationClient() {
               ))}
             </div>
           ) : requests.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-4">
-                {requests.map((request) => (
-                  <Card
-                    key={request.id}
-                    className={`cursor-pointer hover:border-primary transition-colors ${
-                      selectedRequest?.id === request.id ? "border-primary" : ""
-                    }`}
-                    onClick={() => setSelectedRequest(request)}
-                  >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {requests.map((request) => (
+                <Link
+                  key={request.id}
+                  href={`/dashboard/verification/${request.id}`}
+                >
+                  <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                     <CardHeader className="flex flex-row items-center gap-4">
                       <Avatar>
                         <AvatarImage
@@ -119,7 +170,7 @@ export function VerificationClient() {
                           {request.recruiterUser.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
+                      <div className="space-y-1">
                         <CardTitle className="text-lg">
                           {request.recruiterUser.name}
                         </CardTitle>
@@ -128,23 +179,12 @@ export function VerificationClient() {
                         </p>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-muted-foreground">
-                          Submitted{" "}
-                          {format(new Date(request.submittedAt), "PPP")}
-                        </p>
-                        // In the TabsList section:
-                        <TabsList>
-                          <TabsTrigger value={"pending"}>Pending</TabsTrigger>
-                          <TabsTrigger value={"approved"}>Approved</TabsTrigger>
-                          <TabsTrigger value={"rejected"}>Rejected</TabsTrigger>
-                        </TabsList>
-                        // In the Badge component:
                         <Badge
                           variant={
                             request.status === "pending"
-                              ? "outline"
+                              ? "secondary"
                               : request.status === "approved"
                               ? "default"
                               : "destructive"
@@ -152,35 +192,14 @@ export function VerificationClient() {
                         >
                           {request.status}
                         </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(request.submittedAt), "dd MMM yyyy")}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-
-              <div>
-                {selectedRequest ? (
-                  <VerificationDetail
-                    request={selectedRequest}
-                    onApprove={(notes) =>
-                      handleStatusUpdate(selectedRequest.id, "approved", notes)
-                    }
-                    onReject={(notes) =>
-                      handleStatusUpdate(selectedRequest.id, "rejected", notes)
-                    }
-                    onClose={() => setSelectedRequest(null)}
-                    readOnly={activeTab !== "pending"}
-                  />
-                ) : (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-10">
-                      <p className="text-muted-foreground mb-2">
-                        Select a request to view details
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+                </Link>
+              ))}
             </div>
           ) : (
             <Card>

@@ -2,27 +2,33 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { Actions, defineAbilityFor, Subjects } from "@/lib/casl/ability";
-import { navigationItems } from "@/config/navigation";
+import { hiddenProtectedRoutes, navigationItems } from "@/config/navigation";
+import convertPathToRegex from "./lib/utils/convert-to-regex";
 
-const routePermissions = new Map<
-  string,
-  { action: Actions; subject: Subjects }
->();
+type RoutePermission = {
+  path: string;
+  regex: RegExp;
+  action: Actions;
+  subject: Subjects;
+  isHidden?: boolean;
+};
 
-[navigationItems.main, navigationItems.secondary].forEach((section) => {
-  section.forEach((item) => {
+const routePermissions: RoutePermission[] = [];
+
+[
+  { items: navigationItems.main, isHidden: false },
+  { items: navigationItems.secondary, isHidden: false },
+  { items: hiddenProtectedRoutes, isHidden: true },
+].forEach(({ items, isHidden }) => {
+  items.forEach((item) => {
     if (item.permission) {
-      // Simpan hanya permission dengan action 'view' saja untuk route protection
-      const action = Array.isArray(item.permission.action)
-        ? item.permission.action.find((a) => a === "view")
-        : item.permission.action;
-
-      if (action === "view") {
-        routePermissions.set(item.url, {
-          action,
-          subject: item.permission.subject as Subjects,
-        });
-      }
+      routePermissions.push({
+        path: item.url,
+        regex: convertPathToRegex(item.url),
+        action: item.permission.action as Actions,
+        subject: item.permission.subject as Subjects,
+        isHidden,
+      });
     }
   });
 });
@@ -31,20 +37,29 @@ export async function middleware(request: NextRequest) {
   const session = await auth();
   const pathname = request.nextUrl.pathname;
 
-  for (const [routePath, permission] of routePermissions.entries()) {
-    if (pathname.startsWith(routePath)) {
-      // Cek login
+  // Blokir akses ke /login dan /register jika sudah login
+  if (session) {
+    if (pathname === "/login" || pathname === "/register") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  for (const permission of routePermissions) {
+    if (permission.regex.test(pathname)) {
       if (!session) {
         return NextResponse.redirect(new URL("/login", request.url));
       }
 
-      // Cek permission
       const ability = defineAbilityFor(session.user.role || "");
-      const hasAccess = ability.can("view", permission.subject);
+      const hasAccess = Array.isArray(permission.action)
+        ? permission.action.every((a) => ability.can(a, permission.subject))
+        : ability.can(permission.action, permission.subject);
 
       if (!hasAccess) {
         return NextResponse.redirect(new URL("/not-found", request.url));
       }
+
+      break; // stop after first match
     }
   }
 

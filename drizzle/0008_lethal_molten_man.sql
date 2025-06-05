@@ -1,0 +1,3 @@
+CREATE TYPE "public"."application_status" AS ENUM('Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Hired');--> statement-breakpoint
+ALTER TABLE "application" ALTER COLUMN "status" SET DEFAULT 'Applied'::"public"."application_status";--> statement-breakpoint
+ALTER TABLE "application" ALTER COLUMN "status" SET DATA TYPE "public"."application_status" USING "status"::"public"."application_status";

@@ -12,9 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ProfileClient } from "./_components/profile-client";
 import { AccountInfo } from "./_components/account-info";
 import { auth } from "@/auth";
-import { VerificationSubmission } from "./_components/verification-submission";
-
-import CanWrapper from "@/components/can";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -32,11 +29,7 @@ export default async function AccountPage() {
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <CanWrapper I="manage" a="Recruiter Verification">
-            <TabsTrigger value="verification">
-              Recruiter Verification
-            </TabsTrigger>
-          </CanWrapper>
+
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
         </TabsList>
 
@@ -53,7 +46,7 @@ export default async function AccountPage() {
             </CardContent>
           </Card>
 
-          <AccountInfo />
+          <AccountInfo user={session?.user!} />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
@@ -75,22 +68,6 @@ export default async function AccountPage() {
             </CardFooter>
           </Card>
         </TabsContent>
-
-        <CanWrapper I="manage" a="Recruiter Verification">
-          <TabsContent value="verification" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recruiter Verification</CardTitle>
-                <CardDescription>
-                  Submit verification documents to become a verified recruiter.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <VerificationSubmission userId={session?.user?.id} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </CanWrapper>
 
         <TabsContent value="preferences" className="space-y-4">
           <Card>

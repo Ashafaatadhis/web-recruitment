@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,74 +13,48 @@ import z from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
-import action from "../action";
+
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 import Link from "next/link";
-
-const schema = z.object({
-  email: z.string().email("email is invalid"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  name: z.string().min(3, "Name must be at least 3 characters"),
-});
+import { useAuth } from "@/hooks/use-auth";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  loginSchema,
+  LoginSchema,
+  registerSchema,
+  RegisterSchema,
+} from "@/schemas/auth-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const { push } = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
+  const { register, handleGoogleSignIn } = useAuth();
 
-    try {
-      const data = {
-        email: formData.get("email") as string,
-        password: formData.get("password") as string,
-        name: formData.get("name") as string,
-      };
+  const form = useForm<RegisterSchema>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
 
-      const schemaResult = schema.safeParse(data);
-      if (!schemaResult.success) {
-        throw new Error(schemaResult.error.errors[0].message);
-      }
-
-      const res = await action({
-        ...schemaResult.data,
-        username: schemaResult.data.name,
-      });
-
-      if (!res?.status) {
-        toast.error(res?.error || "Registration failed");
-        return;
-      }
-
-      toast.success(res.message);
-      push("/login");
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Something went wrong";
-      toast.error(errorMessage);
-      console.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    setIsGoogleLoading(true);
-    try {
-      await signIn("google", { callbackUrl: "/" });
-    } catch (error) {
-      console.error("Google Sign-In error:", error);
-      toast.error("Could not initiate Google Sign-In. Please try again.");
-      setIsGoogleLoading(false); // Reset loading state on error
-    }
+  const onSubmit = async (data: RegisterSchema) => {
+    await register(data);
   };
 
   return (
@@ -91,15 +67,17 @@ export function RegisterForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={handleGoogleSignUp}
+                  onClick={async () => {
+                    await handleGoogleSignIn(setIsGoogleLoading);
+                  }}
                   type="button"
-                  disabled={isLoading || isGoogleLoading} // Disable if any login is in progress
+                  disabled={form.formState.isSubmitting || isGoogleLoading}
                 >
                   {isGoogleLoading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -123,58 +101,82 @@ export function RegisterForm({
                   )}
                 </Button>
               </div>
+
               <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                 <span className="relative z-10 bg-background px-2 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
-              <div className="grid gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" name="name" type="text" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-primary"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Processing...
-                    </div>
-                  ) : (
-                    "Register"
-                  )}
-                </Button>
-              </div>
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="m@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full bg-primary"
+                disabled={form.formState.isSubmitting || isGoogleLoading}
+              >
+                {form.formState.isSubmitting ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Processing...
+                  </div>
+                ) : (
+                  "Register"
+                )}
+              </Button>
+
               <div className="text-center text-sm">
                 Already have an account?{" "}
                 <Link href="/login" className="underline underline-offset-4">
                   Login
                 </Link>
               </div>
-            </div>
-          </form>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

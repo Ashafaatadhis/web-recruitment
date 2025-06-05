@@ -36,17 +36,11 @@ export const navigationItems = {
     },
     {
       url: "/dashboard/jobs",
-      title: "All Jobs",
+      title: "Jobs",
       icon: Briefcase,
       permission: { action: "view", subject: "Job" },
     },
 
-    {
-      url: "/dashboard/browse-jobs",
-      title: "Browse Jobs",
-      icon: Search,
-      permission: { action: "view", subject: "Browse_Jobs" },
-    },
     {
       url: "/dashboard/applications",
       title: "Applications",
@@ -57,7 +51,7 @@ export const navigationItems = {
       url: "/dashboard/applications/my",
       title: "My Applications",
       icon: FileText,
-      permission: { action: "view", subject: "Application_My" }, // applicant
+      permission: { action: "view", subject: "My_Application" }, // applicant
     },
 
     {
@@ -91,3 +85,31 @@ export const commonNavigation = {
     { url: "/dashboard/help", title: "Help & Support", icon: LifeBuoy },
   ],
 };
+
+// file: navigation.ts
+export const hiddenProtectedRoutes: NavLink[] = [
+  {
+    url: "/dashboard/applications/apply",
+    title: "Apply Job (Hidden)",
+    icon: FileText, // dummy icon
+    permission: { action: "view", subject: "My_Application" },
+  },
+  {
+    url: "/dashboard/jobs/:id",
+    title: "Detail Job (Hidden)",
+    icon: FileText, // dummy icon
+    permission: { action: "read", subject: "Job" },
+  },
+  {
+    url: "/dashboard/jobs/create",
+    title: "Detail Job (Hidden)",
+    icon: FileText, // dummy icon
+    permission: { action: "create", subject: "Job" },
+  },
+  {
+    url: "/dashboard/jobs/:id/edit",
+    title: "Detail Job (Hidden)",
+    icon: FileText, // dummy icon
+    permission: { action: "update", subject: "Job" },
+  },
+];
