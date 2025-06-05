@@ -58,7 +58,7 @@ export const navigationItems = {
       url: "/dashboard/candidates",
       title: "Candidates",
       icon: Users,
-      permission: { action: "view", subject: "User" },
+      permission: { action: "view", subject: "Candidate" },
     },
     {
       url: "/dashboard/verification",
@@ -93,6 +93,12 @@ export const hiddenProtectedRoutes: NavLink[] = [
     title: "Apply Job (Hidden)",
     icon: FileText, // dummy icon
     permission: { action: "view", subject: "My_Application" },
+  },
+  {
+    url: "/dashboard/applications/apply/:id",
+    title: "Apply Job (Hidden)",
+    icon: FileText, // dummy icon
+    permission: { action: "read", subject: "My_Application" },
   },
   {
     url: "/dashboard/jobs/:id",

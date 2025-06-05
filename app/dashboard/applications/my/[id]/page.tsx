@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { getMyApplicationDetails } from "../action";
+import { getMyApplicationDetails } from "@/actions/application";
 
 export default async function MyApplicationDetailPage({
   params,

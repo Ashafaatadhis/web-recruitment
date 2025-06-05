@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 import { format } from "date-fns";
-import { getApplicationDetails } from "../action";
+import { getApplicationDetails } from "@/actions/application";
 
 export default async function ApplicationDetailPage({
   params,

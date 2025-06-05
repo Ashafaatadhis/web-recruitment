@@ -2,8 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 import { format } from "date-fns";
-import { getMyApplications } from "./action";
 import Link from "next/link";
+import { getMyApplications } from "@/actions/application";
 
 export default async function MyApplicationsPage() {
   const applications = await getMyApplications();

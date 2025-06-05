@@ -114,7 +114,11 @@ export const authenticators = pgTable(
     },
   ]
 );
-
+export const jobStatusEnum = pgEnum("job_status_enum", [
+  "draft",
+  "open",
+  "closed",
+]);
 // New tables for the recruitment system (and modified ones)
 
 export const jobs = pgTable("job", {
@@ -126,7 +130,8 @@ export const jobs = pgTable("job", {
   requirements: text("requirements"),
   location: text("location"),
   jobType: text("job_type"), // e.g., 'Full-time', 'Part-time', 'Contract'
-  status: text("status").default("draft").notNull(), // e.g., 'draft', 'open', 'closed'
+  // status: text("status").default("draft").notNull(), // e.g., 'draft', 'open', 'closed'
+  status: jobStatusEnum("status").default("draft").notNull(),
   postedById: text("posted_by_id").references(() => users.id, {
     onDelete: "set null",
   }), // HR user who posted it

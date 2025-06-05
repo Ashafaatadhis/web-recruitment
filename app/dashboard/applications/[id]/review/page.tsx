@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
 
-import { getApplicationDetails } from "../../action";
 import Link from "next/link";
 
 import { ApplicationForm } from "./_components/application-form";
-import { updateStatus } from "./_components/action";
+
+import { getApplicationDetails } from "@/actions/application";
 
 export default async function ApplicationReviewPage({
   params,
@@ -30,12 +30,7 @@ export default async function ApplicationReviewPage({
           <CardTitle>Review Application</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <ApplicationForm
-            id={id}
-            status={status}
-            hrNotes={hrNotes ?? ""}
-            updateStatusAction={updateStatus}
-          />
+          <ApplicationForm id={id} status={status} hrNotes={hrNotes ?? ""} />
         </CardContent>
       </Card>
 

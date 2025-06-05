@@ -15,48 +15,41 @@ import {
 } from "@/components/ui/select";
 import { applicationStatusEnum } from "@/lib/db/schema";
 import Link from "next/link";
+import { updateApplicationStatus } from "@/actions/application";
 
 export function ApplicationForm({
   id,
   status,
   hrNotes,
-  updateStatusAction, // Add this prop
 }: {
   id: string;
   status: string;
   hrNotes?: string;
-  updateStatusAction: (
-    id: string,
-    status: (typeof applicationStatusEnum.enumValues)[number],
-    notes: string
-  ) => Promise<void>;
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const newStatus = formData.get(
-          "status"
-        ) as (typeof applicationStatusEnum.enumValues)[number];
-        const notes = formData.get("notes") as string;
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newStatus = formData.get(
+      "status"
+    ) as (typeof applicationStatusEnum.enumValues)[number];
+    const notes = formData.get("notes") as string;
 
-        startTransition(async () => {
-          try {
-            await updateStatusAction(id, newStatus, notes);
-            toast.success("Application status updated successfully");
-          } catch (error) {
-            toast.error("Failed to update application status");
-            console.error("Update error:", error);
-          } finally {
-            router.refresh();
-          }
-        });
-      }}
-    >
+    startTransition(async () => {
+      try {
+        await updateApplicationStatus(id, newStatus, notes); // langsung action
+        toast.success("Application status updated successfully");
+      } catch (error) {
+        toast.error("Failed to update application status");
+        console.error("Update error:", error);
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
       <div>
         <h3 className="font-medium mb-2">Application Status</h3>
         <Select name="status" defaultValue={status}>

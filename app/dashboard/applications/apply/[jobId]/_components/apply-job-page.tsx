@@ -5,17 +5,11 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createApplication } from "../action";
+import { JobWithQuestions } from "@/lib/types/job";
+import { createApplication } from "@/actions/application";
 
 type Props = {
-  job: {
-    id: string;
-    title: string;
-    questions: {
-      question: string;
-      id: string;
-    }[];
-  };
+  job: JobWithQuestions;
 };
 
 export default function ApplyJobClient({ job }: Props) {
@@ -31,7 +25,7 @@ export default function ApplyJobClient({ job }: Props) {
         questionId: question.id,
         answer: formData.get(`question-${index}`) as string,
       })) || [];
-    console.log(answers, " JAWABAN");
+
     startTransition(async () => {
       try {
         await createApplication({

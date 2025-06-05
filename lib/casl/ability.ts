@@ -30,12 +30,11 @@ const rolePermissions: Record<
 > = {
   admin: [
     { action: ["view", "read", "create", "delete", "update"], subject: "Job" },
+    { action: ["view"], subject: "User" },
   ],
   recruiter: [
     { action: ["view", "read"], subject: "Job" },
     { action: ["view", "read", "update"], subject: "Application" },
-
-    { action: ["view", "read"], subject: "User" },
   ],
   applicant: [
     { action: ["view", "create", "read", "update"], subject: "My_Application" },
