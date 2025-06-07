@@ -10,7 +10,8 @@ import { Search } from "lucide-react";
 
 import { JobCard } from "./_components/job-card";
 import { JobFilters } from "./_components/job-filters";
-import { fetchJobs } from "./_components/actions";
+import { fetchJobs } from "@/actions/job";
+import { jobType } from "@/lib/types/models/job";
 
 type Job = {
   id: string;
@@ -30,7 +31,7 @@ export default function BrowseJobsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
-  const [jobType, setJobType] = useState("");
+  const [jobType, setJobType] = useState<jobType | "all">("all");
 
   useEffect(() => {
     const loadJobs = async () => {
@@ -114,7 +115,7 @@ export default function BrowseJobsPage() {
                   onClick={() => {
                     setSearchQuery("");
                     setLocation("");
-                    setJobType("");
+                    setJobType("all");
                   }}
                 >
                   Clear filters

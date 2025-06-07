@@ -9,11 +9,12 @@ import { ApplicationForm } from "./_components/application-form";
 
 import { getApplicationDetails } from "@/actions/application";
 
-export default async function ApplicationReviewPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function ApplicationReviewPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const application = await getApplicationDetails(params.id);
 
   if (!application) {
@@ -56,18 +57,49 @@ export default async function ApplicationReviewPage({
             <p className="text-sm text-muted-foreground">Applied Position</p>
             <p>{job?.title || "Not specified"}</p>
           </div>
-          {applicantUser?.resumeUrl && (
+          {application?.resumeUrl && (
             <div className="md:col-span-2">
               <p className="text-sm text-muted-foreground">Resume</p>
               <Button asChild variant="link" className="p-0">
-                <Link href={applicantUser.resumeUrl} target="_blank">
+                <Link href={application.resumeUrl} target="_blank">
                   View Resume
                 </Link>
               </Button>
             </div>
           )}
+          {application?.coverLetter && (
+            <div className="md:col-span-2">
+              <p className="text-sm text-muted-foreground font-medium mb-2">
+                Cover Letter
+              </p>
+              <div className="whitespace-pre-wrap rounded-md border border-muted p-4 text-sm">
+                {application.coverLetter}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {application.answers && application.answers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Application Answers</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {application.answers.map((qa, idx) => (
+              <div
+                key={idx}
+                className="border-b last:border-b-0 pb-4 last:pb-0"
+              >
+                <p className="text-sm font-medium">{qa.question.question}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">
+                  {qa.answer || "Not answered"}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

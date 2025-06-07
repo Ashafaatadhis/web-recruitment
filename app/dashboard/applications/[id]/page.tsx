@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { getApplicationDetails } from "@/actions/application";
 
-export default async function ApplicationDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function ApplicationDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const application = await getApplicationDetails(params.id);
 
   if (!application) {
@@ -41,7 +42,7 @@ export default async function ApplicationDetailPage({
                 <p>
                   {`${application.applicantUser?.firstName || ""} ${
                     application.applicantUser?.lastName || ""
-                  }`.trim() || "Anonymous"}
+                  }`.trim() || "Not provided"}
                 </p>
               </div>
               <div>
@@ -66,32 +67,7 @@ export default async function ApplicationDetailPage({
                   {application.applicantUser?.portfolioUrl || "Not provided"}
                 </p>
               </div>
-              {application.applicantUser?.resumeUrl && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Resume</p>
-                  <a
-                    href={application.applicantUser.resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    View Resume
-                  </a>
-                </div>
-              )}
             </div>
-          </div>
-
-          <div>
-            <h3 className="font-medium mb-2">Application Content</h3>
-            {application.applicantUser.coverLetter && (
-              <div className="border rounded-lg p-4 mb-4">
-                <h4 className="font-medium mb-2">Cover Letter</h4>
-                <p className="whitespace-pre-line">
-                  {application.applicantUser.coverLetter}
-                </p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

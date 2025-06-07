@@ -9,10 +9,11 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { jobType } from "@/lib/types/models/job";
 
 interface JobFiltersProps {
   onLocationChange: (location: string) => void;
-  onJobTypeChange: (jobType: string) => void;
+  onJobTypeChange: (jobType: jobType | "all") => void;
 }
 
 export function JobFilters({
@@ -50,7 +51,15 @@ export function JobFilters({
           <Label htmlFor="job-type">Job Type</Label>
           <Select
             onValueChange={(value) =>
-              onJobTypeChange(value === "any" ? "" : value)
+              onJobTypeChange(
+                value === "any"
+                  ? "all"
+                  : value.toLowerCase().replace("-", "") === "fulltime"
+                  ? "full-time"
+                  : value.toLowerCase().replace("-", "") === "parttime"
+                  ? "part-time"
+                  : (value.toLowerCase() as jobType)
+              )
             }
           >
             <SelectTrigger id="job-type">

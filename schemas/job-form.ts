@@ -46,7 +46,9 @@ export const jobFormSchema = z.object({
   ),
   requirements: z.any(),
   location: z.string().optional(),
-  jobType: z.string().min(1, { message: "Job type is required" }),
+  jobType: z.enum(["full-time", "part-time", "contract"], {
+    required_error: "Job type is required",
+  }),
   status: z.enum(["open", "closed", "draft"]),
   questions: z
     .array(

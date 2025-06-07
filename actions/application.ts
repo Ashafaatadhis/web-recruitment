@@ -5,14 +5,76 @@ import {
   applicationAnswers,
   applications,
   applicationStatusHistories,
+  jobs,
+  users,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { applicationStatusEnum } from "@/lib/db/schema";
 import { JobWithApplications } from "@/lib/types/models/job";
-import { useAuth } from "@/hooks/use-auth";
+
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { CreateApplicationInput } from "@/lib/types/job";
+
+import { GetAllApplicationParams } from "@/lib/types/application";
+
+export async function getApplicationsWithRelations({
+  limit = 10,
+  page = 1,
+  status = "all",
+  search = "",
+}: GetAllApplicationParams = {}) {
+  const offset = (page - 1) * limit;
+
+  const filters = [];
+
+  if (status !== "all") {
+    filters.push(eq(applications.status, status));
+  }
+
+  if (search.trim()) {
+    filters.push(
+      or(like(jobs.title, `%${search}%`), like(jobs.location, `%${search}%`))
+    );
+  }
+
+  const [rows, totalResult] = await Promise.all([
+    db
+      .select({
+        application: applications,
+        job: jobs,
+        applicantUser: users,
+      })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .innerJoin(users, eq(applications.applicantUserId, users.id))
+      .where(and(...filters))
+      .orderBy(desc(applications.createdAt))
+      .limit(limit)
+      .offset(offset),
+
+    db
+      .select({ count: count() })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .where(and(...filters)),
+  ]);
+
+  const applicationsWithRelations = rows.map((row) => ({
+    ...row.application,
+    job: row.job,
+    applicantUser: row.applicantUser,
+  }));
+
+  const total = Number(totalResult[0]?.count || 0);
+
+  return {
+    applications: applicationsWithRelations,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
 
 export async function getApplicationsWithJobs(): Promise<
   JobWithApplications[]

@@ -14,23 +14,22 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { deleteJob } from "../action"; // adjust path if needed
+import { deleteJob } from "@/actions/job";
+import { Trash } from "lucide-react";
 
 export function DeleteJobButton({ jobId }: { jobId: string }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
+        <button
           type="button"
-          size="sm"
-          variant="destructive"
+          className="text-red-600 hover:text-red-800 inline-flex items-center justify-center"
           disabled={isPending}
         >
-          Delete
-        </Button>
+          <Trash className="w-5 h-5" />
+        </button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -47,7 +46,6 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
             onClick={() => {
               startTransition(async () => {
                 await deleteJob(jobId);
-                router.refresh();
               });
             }}
           >

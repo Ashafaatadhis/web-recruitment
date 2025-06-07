@@ -17,6 +17,7 @@ export type Subjects =
   | "Profile"
   | "My_Application"
   | "Verification"
+  | "Candidate"
   | "all";
 
 // Define the ability type
@@ -35,6 +36,7 @@ const rolePermissions: Record<
   recruiter: [
     { action: ["view", "read"], subject: "Job" },
     { action: ["view", "read", "update"], subject: "Application" },
+    { action: ["view", "read", "update"], subject: "Candidate" },
   ],
   applicant: [
     { action: ["view", "create", "read", "update"], subject: "My_Application" },

@@ -18,24 +18,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
+import { Eye, Pencil, Trash } from "lucide-react";
 
-import { Pagination } from "@/components/pagination";
-import { InferSelectModel } from "drizzle-orm";
-import { users } from "@/lib/db/schema";
 import { deleteUser } from "@/actions/user/user";
-
-export type User = InferSelectModel<typeof users>;
+import Link from "next/link";
+import type { User } from "@/lib/types/models/user";
 
 interface Props {
   users: User[];
   page: number;
   limit: number;
-  total: number;
-  totalPages: number;
 }
 
-export default function User({ users, page, limit, total, totalPages }: Props) {
+export default function User({ users, page, limit }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -64,37 +59,56 @@ export default function User({ users, page, limit, total, totalPages }: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user, index) => (
-            <TableRow key={user.id}>
-              <TableCell>{(page - 1) * limit + index + 1}</TableCell>
-              <TableCell>{user.username}</TableCell>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.role}</TableCell>
-              <TableCell className="text-center">
-                <button
-                  onClick={() => {
-                    setSelectedUser(user);
-                    setOpen(true);
-                  }}
-                  aria-label={`Delete user ${user.username}`}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <Trash className="inline-block w-5 h-5" />
-                </button>
+          {users.length > 0 ? (
+            users.map((user, index) => (
+              <TableRow key={user.id}>
+                <TableCell>{(page - 1) * limit + index + 1}</TableCell>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell className="text-center flex items-center justify-center gap-2">
+                  {/* Tombol View */}
+                  <Link
+                    href={`/dashboard/users/${user.id}`}
+                    aria-label={`Lihat detail user ${user.username}`}
+                    className="text-blue-600 hover:text-blue-800 inline-flex items-center justify-center"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </Link>
+
+                  {/* Tombol Edit */}
+                  <Link
+                    href={`/dashboard/users/${user.id}/edit`}
+                    aria-label={`Edit user ${user.username}`}
+                    className="text-yellow-600 hover:text-yellow-800 inline-flex items-center justify-center"
+                  >
+                    <Pencil className="w-5 h-5" />
+                  </Link>
+
+                  {/* Tombol Delete */}
+                  <button
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setOpen(true);
+                    }}
+                    aria-label={`Delete user ${user.username}`}
+                    className="text-red-600 hover:text-red-800 inline-flex items-center justify-center"
+                  >
+                    <Trash className="w-5 h-5" />
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-4">
+                No users found.
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
-
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        totalItems={total}
-        limit={limit}
-        basePath="/dashboard/users"
-      />
 
       {/* Dialog konfirmasi delete */}
       <Dialog open={open} onOpenChange={setOpen}>

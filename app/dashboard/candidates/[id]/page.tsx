@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { getCandidateDetails } from "@/actions/candidate";
 
-export default async function CandidateDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function CandidateDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const candidate = await getCandidateDetails(params.id);
 
   if (!candidate) {

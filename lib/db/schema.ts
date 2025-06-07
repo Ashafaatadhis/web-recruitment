@@ -9,6 +9,11 @@ import {
   unique, // Make sure 'unique' is imported
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
+export const userRoleEnum = pgEnum("user_role", [
+  "applicant",
+  "recruiter",
+  "admin",
+]);
 
 export const users = pgTable("user", {
   id: text("id")
@@ -20,7 +25,7 @@ export const users = pgTable("user", {
   image: text("image"),
   username: text("username").unique(),
   password: text("password"),
-  role: text("role").default("applicant").notNull(), // 'applicant', 'recruiter', 'admin'
+  role: userRoleEnum("role").default("applicant").notNull(),
   isRecruiterVerified: boolean("is_recruiter_verified")
     .default(false)
     .notNull(), // New field for recruiter verification
@@ -31,8 +36,8 @@ export const users = pgTable("user", {
   lastName: text("last_name"),
   phoneNumber: text("phone_number"),
   location: text("location"), // Add this line
-  resumeUrl: text("resume_url"),
-  coverLetter: text("cover_letter"), // Or this could be per application
+  // resumeUrl: text("resume_url"),
+  // coverLetter: text("cover_letter"), // Or this could be per application
   linkedInProfile: text("linkedin_profile"),
   portfolioUrl: text("portfolio_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -119,6 +124,12 @@ export const jobStatusEnum = pgEnum("job_status_enum", [
   "open",
   "closed",
 ]);
+export const jobTypeEnum = pgEnum("job_type_enum", [
+  "full-time",
+  "part-time",
+  "contract",
+]);
+
 // New tables for the recruitment system (and modified ones)
 
 export const jobs = pgTable("job", {
@@ -129,7 +140,7 @@ export const jobs = pgTable("job", {
   description: text("description").notNull(),
   requirements: text("requirements"),
   location: text("location"),
-  jobType: text("job_type"), // e.g., 'Full-time', 'Part-time', 'Contract'
+  jobType: jobTypeEnum("job_type"),
   // status: text("status").default("draft").notNull(), // e.g., 'draft', 'open', 'closed'
   status: jobStatusEnum("status").default("draft").notNull(),
   postedById: text("posted_by_id").references(() => users.id, {
@@ -169,8 +180,8 @@ export const applications = pgTable(
     applicationDate: timestamp("application_date").defaultNow().notNull(),
     status: applicationStatusEnum("status").default("Applied").notNull(), // e.g., 'Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Hired'
     // Specific application details, if resume/cover letter are per application
-    // resumeUrl: text("resume_url"),
-    // coverLetter: text("cover_letter"),
+    resumeUrl: text("resume_url"),
+    coverLetter: text("cover_letter"),
     hrNotes: text("hr_notes"), // Internal notes by HR
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

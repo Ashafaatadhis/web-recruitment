@@ -27,7 +27,6 @@ export function ApplicationForm({
   hrNotes?: string;
 }) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

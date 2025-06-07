@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-
 import { toast } from "sonner";
+import { useState } from "react";
 
 import {
   Form,
@@ -25,44 +25,40 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createUser } from "@/actions/user/user";
-import {
-  userCreateFormSchema,
-  UserCreateFormSchema,
-} from "@/schemas/user-form";
 
-export default function CreateUserPage() {
+import { userEditFormSchema, UserEditFormSchema } from "@/schemas/user-form";
+import { User } from "@/lib/types/models/user";
+import { updateUser } from "@/actions/user/user";
+
+export default function EditUserForm({ user }: { user: User }) {
   const router = useRouter();
 
-  const form = useForm<UserCreateFormSchema>({
-    resolver: zodResolver(userCreateFormSchema),
+  const form = useForm<UserEditFormSchema>({
+    resolver: zodResolver(userEditFormSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      username: "",
-      password: "",
-      role: "applicant",
+      name: user.name ?? "",
+      email: user.email ?? "",
+      username: user.username ?? "",
+      role: user.role,
     },
   });
 
-  const onSubmit = async (data: UserCreateFormSchema) => {
+  const onSubmit = async (data: UserEditFormSchema) => {
     try {
-      await createUser(data);
-
-      router.push("/dashboard/users"); // pindah ke halaman user
+      await updateUser(user.id, data); // update user di backend
+      toast.success("User updated successfully");
+      router.push("/dashboard/users");
     } catch (err) {
-      console.error("Failed to create user", err);
-      toast.error("Failed to create user. Please try again.");
+      console.error("Failed to update user", err);
+      toast.error("Failed to update user. Please try again.");
     }
   };
 
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Create New User</h1>
-        <p className="text-muted-foreground">
-          Fill out the form to create a new user.
-        </p>
+        <h1 className="text-3xl font-bold">Update User</h1>
+        <p className="text-muted-foreground">Modify user information below.</p>
       </div>
       <Card>
         <CardHeader>
@@ -119,24 +115,6 @@ export default function CreateUserPage() {
 
               <FormField
                 control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="role"
                 render={({ field }) => (
                   <FormItem>
@@ -159,7 +137,7 @@ export default function CreateUserPage() {
               />
 
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Creating..." : "Create User"}
+                {form.formState.isSubmitting ? "Updating..." : "Update User"}
               </Button>
             </form>
           </Form>

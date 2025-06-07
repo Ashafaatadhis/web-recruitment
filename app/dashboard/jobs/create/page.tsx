@@ -25,73 +25,17 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { createJob } from "./action"; // kamu buat ini nanti
+
 import { toast } from "sonner";
 import { Editor } from "@/components/blocks/editor-00/editor";
-import { SerializedEditorState } from "lexical";
-import { createJob } from "./action";
 
-const jobFormSchema = z.object({
-  title: z.string().min(3, { message: "Title is required" }),
-  description: z.any().refine(
-    (val) => {
-      try {
-        return JSON.stringify(val).includes('"text":"'); // very basic check
-      } catch {
-        return false;
-      }
-    },
-    { message: "Description is required" }
-  ),
-  requirements: z.any(),
-
-  location: z.string().optional(),
-  jobType: z.string().min(1, { message: "Job type is required" }),
-  status: z.enum(["open", "closed", "draft"]),
-  questions: z
-    .array(
-      z.object({ question: z.string().min(1, "Question cannot be empty") })
-    )
-    .optional(),
-});
-
-type JobFormValues = z.infer<typeof jobFormSchema>;
-
-const initialValue = {
-  root: {
-    children: [
-      {
-        children: [
-          {
-            detail: 0,
-            format: 0,
-            mode: "normal",
-            style: "",
-            text: "Welcome to Lexical, a powerful new way to build editor.",
-            type: "text",
-            version: 1,
-          },
-        ],
-        direction: "ltr",
-        format: "",
-        indent: 0,
-        type: "paragraph",
-        version: 1,
-      },
-    ],
-    direction: "ltr",
-    format: "",
-    indent: 0,
-    type: "root",
-    version: 1,
-  },
-} as unknown as SerializedEditorState;
+import { initialValue, jobFormSchema, JobFormValues } from "@/schemas/job-form";
+import { createJob } from "@/actions/job";
 
 export default function CreateJobPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
@@ -112,7 +56,6 @@ export default function CreateJobPage() {
   });
 
   const onSubmit = async (data: JobFormValues) => {
-    setIsSubmitting(true);
     try {
       await createJob({
         ...data,
@@ -124,8 +67,6 @@ export default function CreateJobPage() {
     } catch (err) {
       console.error("Failed to create job", err);
       toast.error("Failed to create job. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -288,8 +229,8 @@ export default function CreateJobPage() {
                 </Button>
               </div>
 
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Job"}
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Creating..." : "Create Job"}
               </Button>
             </form>
           </Form>

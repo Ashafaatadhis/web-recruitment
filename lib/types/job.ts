@@ -1,4 +1,5 @@
 import { jobStatusEnum } from "../db/schema";
+import { jobStatus, jobType } from "./models/job";
 
 export type JobQuestion = {
   question: string;
@@ -16,12 +17,25 @@ export type CreateApplicationInput = {
   answers: { questionId: string; answer: string }[];
 };
 
-export type UpdateJobInput = {
+export type JobInput = {
   title: string;
   description: string;
   requirements: string;
   location?: string;
-  jobType: string;
-  status: (typeof jobStatusEnum.enumValues)[number]; // ambil dari enum schema langsung
+  jobType: jobType;
+  status: jobStatus;
   questions?: { question: string }[];
+};
+
+export type FetchJobsParams = {
+  searchQuery?: string;
+  location?: string;
+  jobType?: jobType | "all";
+};
+
+export type GetAllJobParams = {
+  page?: number;
+  limit?: number;
+  type?: jobType | "all";
+  search?: string;
 };

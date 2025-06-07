@@ -1,28 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getJobById } from "./action";
+
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import JobRichTextViewer from "@/components/job-rich-text-viewer";
+import { getJobById } from "@/actions/job";
 
-type Job = {
-  id: string;
-  title: string;
-  description: string;
-  requirements: string | null;
-  location: string | null;
-  jobType: string | null;
-  status: string;
-  postedBy?: { name: string } | null;
-  createdAt: string;
-};
-
-export default async function JobDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function JobDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const job = await getJobById(params.id);
 
   if (!job) {

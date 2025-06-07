@@ -13,11 +13,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { VerificationStatus } from "@/types/verification-types";
 
-export default async function VerificationDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function VerificationDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await auth();
   const [request] = await fetchVerificationRequestsById(params.id);
 

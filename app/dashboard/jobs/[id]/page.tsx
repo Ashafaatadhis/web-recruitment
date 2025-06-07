@@ -18,11 +18,12 @@ import { auth } from "@/auth";
 
 import JobRichTextViewer from "@/components/job-rich-text-viewer";
 
-export default async function JobDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function JobDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await auth();
 
   const job = await db.query.jobs.findFirst({
