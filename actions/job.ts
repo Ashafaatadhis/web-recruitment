@@ -102,7 +102,7 @@ export async function getAllJobs({
 
   if (search.trim()) {
     filters.push(
-      or(like(jobs.title, `%${search}%`), like(jobs.location, `%${search}%`))
+      or(ilike(jobs.title, `%${search}%`), ilike(jobs.location, `%${search}%`))
     );
   }
 

@@ -8,7 +8,7 @@ import {
   jobs,
   users,
 } from "@/lib/db/schema";
-import { and, count, desc, eq, like, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or } from "drizzle-orm";
 import { applicationStatusEnum } from "@/lib/db/schema";
 import { JobWithApplications } from "@/lib/types/models/job";
 
@@ -34,7 +34,7 @@ export async function getApplicationsWithRelations({
 
   if (search.trim()) {
     filters.push(
-      or(like(jobs.title, `%${search}%`), like(jobs.location, `%${search}%`))
+      or(ilike(jobs.title, `%${search}%`), ilike(users.name, `%${search}%`))
     );
   }
 
@@ -57,6 +57,7 @@ export async function getApplicationsWithRelations({
       .select({ count: count() })
       .from(applications)
       .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .innerJoin(users, eq(applications.applicantUserId, users.id))
       .where(and(...filters)),
   ]);
 
@@ -183,27 +184,71 @@ export async function getMyApplicationDetails(id: string) {
   });
 }
 
-export async function getMyApplications() {
+export async function getMyApplications({
+  limit = 10,
+  page = 1,
+  status = "all",
+  search = "",
+}: GetAllApplicationParams = {}) {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return [];
+  if (!userId)
+    return {
+      applications: [],
+      total: 0,
+      page: 1,
+      totalPages: 1,
+    };
 
-  return db.query.applications.findMany({
-    where: eq(applications.applicantUserId, userId),
-    with: {
-      job: {
-        columns: {
-          title: true,
-          location: true,
-          jobType: true,
-        },
-        with: {
-          postedBy: {
-            columns: { name: true },
-          },
-        },
-      },
-    },
-    orderBy: (apps, { desc }) => desc(apps.createdAt),
-  });
+  const offset = (page - 1) * limit;
+
+  const filters = [];
+
+  if (status !== "all") {
+    filters.push(eq(applications.status, status));
+  }
+
+  if (search.trim()) {
+    filters.push(
+      or(ilike(jobs.title, `%${search}%`), ilike(users.name, `%${search}%`))
+    );
+  }
+
+  const [rows, totalResult] = await Promise.all([
+    db
+      .select({
+        application: applications,
+        job: jobs,
+        applicantUser: users,
+      })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .innerJoin(users, eq(applications.applicantUserId, users.id))
+      .where(and(...filters, eq(applications.applicantUserId, userId)))
+      .orderBy(desc(applications.createdAt))
+      .limit(limit)
+      .offset(offset),
+
+    db
+      .select({ count: count() })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .innerJoin(users, eq(applications.applicantUserId, users.id))
+      .where(and(...filters)),
+  ]);
+
+  const applicationsWithRelations = rows.map((row) => ({
+    ...row.application,
+    job: row.job,
+    applicantUser: row.applicantUser,
+  }));
+
+  const total = Number(totalResult[0]?.count || 0);
+
+  return {
+    applications: applicationsWithRelations,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
 }

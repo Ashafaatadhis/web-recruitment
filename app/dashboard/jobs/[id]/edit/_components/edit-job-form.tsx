@@ -3,11 +3,9 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import { jobFormSchema, JobFormValues, initialValue } from "@/schemas/job-form";
-import { getJobById } from "@/app/(landing)/browse-jobs/[id]/action";
 
 import { Editor } from "@/components/blocks/editor-00/editor";
 import {

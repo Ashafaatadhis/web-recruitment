@@ -35,7 +35,7 @@ export default async function ApplicationsPage(props: {
         <h1 className="text-3xl font-bold">Job Applications</h1>
       </div>
 
-      <ApplicationsFilterWrapper />
+      <ApplicationsFilterWrapper route="/dashboard/applications" />
       <LimitSelector />
 
       <div className="rounded-md border">
