@@ -47,7 +47,7 @@ export default async function JobsPage(props: {
       </div>
 
       {/* Render client component filter */}
-      <JobsFilterWrapper />
+      <JobsFilterWrapper url="/dashboard/jobs" />
 
       <LimitSelector />
 

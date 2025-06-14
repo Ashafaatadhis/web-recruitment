@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { JobsFilter } from "./jobs-filter";
 
-export default function JobsFilterWrapper() {
+export default function JobsFilterWrapper({ url }: { url?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -28,7 +28,7 @@ export default function JobsFilterWrapper() {
 
       params.set("page", "1"); // reset ke halaman 1 kalau filter baru
 
-      router.push(`/dashboard/jobs?${params.toString()}`);
+      router.push(`${url}?${params.toString()}`);
     },
     [router] // pastikan router masuk dependency
   );

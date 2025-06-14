@@ -37,5 +37,6 @@ export type GetAllJobParams = {
   page?: number;
   limit?: number;
   type?: jobType | "all";
+  status?: jobStatus | "all";
   search?: string;
 };

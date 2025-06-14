@@ -4,11 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { getMyApplicationDetails } from "@/actions/application";
 
-export default async function MyApplicationDetailPage(
-  props: {
-    params: Promise<{ id: string }>;
-  }
-) {
+export default async function MyApplicationDetailPage(props: {
+  params: Promise<{ id: string }>;
+}) {
   const params = await props.params;
   const application = await getMyApplicationDetails(params.id);
 

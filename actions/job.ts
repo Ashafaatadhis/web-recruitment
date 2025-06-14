@@ -89,6 +89,7 @@ export async function getAllJobs({
   limit = 10,
   page = 1,
   type = "all",
+  status = "all",
   search = "",
 }: GetAllJobParams = {}) {
   const offset = (page - 1) * limit;
@@ -98,6 +99,10 @@ export async function getAllJobs({
 
   if (type !== "all") {
     filters.push(eq(jobs.jobType, type));
+  }
+
+  if (status !== "all") {
+    filters.push(eq(jobs.status, status));
   }
 
   if (search.trim()) {
