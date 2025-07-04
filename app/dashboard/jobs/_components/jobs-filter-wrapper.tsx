@@ -12,7 +12,6 @@ export default function JobsFilterWrapper({ url }: { url?: string }) {
     type: searchParams.get("type") || "all",
     search: searchParams.get("search") || "",
   });
-
   const handleApply = useCallback(
     (newFilters: typeof filters) => {
       setFilters(newFilters);
@@ -30,7 +29,7 @@ export default function JobsFilterWrapper({ url }: { url?: string }) {
 
       router.push(`${url}?${params.toString()}`);
     },
-    [router] // pastikan router masuk dependency
+    [router, url] // tambahkan 'url' di sini
   );
 
   return (

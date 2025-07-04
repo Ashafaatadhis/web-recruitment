@@ -2,8 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProfileAvatar } from "./profile-avatar";
@@ -14,45 +13,67 @@ import { useTemporaryImageCleanup } from "@/hooks/use-temporary-image-cleanup";
 import { deleteImage } from "@/lib/utils/image-upload";
 import { updateUserProfile } from "@/actions/user/update-profile";
 
-export function ProfileClient() {
+import { User } from "@/lib/types/models/user";
+
+type FormValues = {
+  name: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  location?: string;
+  linkedinProfile?: string;
+  portfolioUrl?: string;
+};
+
+export function ProfileClient({ user }: { user: User }) {
+  const router = useRouter();
   const { data: session, update, status } = useSession();
   const [temporaryImage, setTemporaryImage] = useState<string | null>(null);
-  const [committedImage, setCommittedImage] = useState<string>(
-    session?.user?.image ?? ""
-  );
-  // Auto-cleanup if user reloads or leaves without saving
+
   useTemporaryImageCleanup(temporaryImage);
 
-  const handleProfileUpdate = async (name: string) => {
-    const newImage = temporaryImage || committedImage;
+  if (status === "loading") return <ProfileSkeleton />;
+  if (!session) {
+    router.push("/login");
+    return null;
+    // Atau tampilkan pesan:
+    // return <div>Unauthorized</div>;
+  }
 
+  const handleProfileUpdate = async (data: FormValues) => {
+    const newImage = temporaryImage;
+
+    setTemporaryImage(null);
+    // console.log(newImage, "TAII TAI");
     const result = await updateUserProfile({
-      id: session?.user?.id!,
-      name,
+      id: session?.user?.id,
+      name: data.name,
       image: newImage,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phoneNumber: data.phoneNumber,
+      location: data.location,
+      linkedinProfile: data.linkedinProfile,
+      portfolioUrl: data.portfolioUrl,
     });
-
+    console.log(result.error);
     if (!result.error) {
-      setCommittedImage(newImage); // commit
-      deleteImage(committedImage); // delete temp image if exists
-      setTemporaryImage(null); // clear temp
-      await update({ user: { name, image: newImage } });
+      await update({ user: { name: data.name, image: newImage } });
     }
   };
 
   const handleAvatarChange = (url: string) => {
-    deleteImage(temporaryImage ?? "");
+    console.log(url, "allah");
+    if (temporaryImage) deleteImage(temporaryImage);
     setTemporaryImage(url);
   };
-
-  if (status === "loading") return <ProfileSkeleton />;
-  if (!session) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <ProfileAvatar
-          currentImage={session.user.image || ""}
+          currentImage={user.image || ""}
           onImageChange={handleAvatarChange}
           userName={session.user.name || ""}
         />
@@ -71,8 +92,7 @@ export function ProfileClient() {
       <Separator />
 
       <ProfileForm
-        initialName={session.user.name || ""}
-        initialEmail={session.user.email || ""}
+        user={user}
         onSubmit={handleProfileUpdate}
         hasAvatarChanges={!!temporaryImage}
       />

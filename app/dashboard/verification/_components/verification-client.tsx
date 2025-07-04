@@ -1,34 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { fetchVerificationRequests, updateVerificationStatus } from "./actions";
-import { VerificationDetail } from "./verification-detail";
+import { fetchVerificationRequests } from "./actions";
+
 import {
   VerificationRequest,
   VerificationStatus,
 } from "@/types/verification-types";
-import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 
 export function VerificationClient() {
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] =
-    useState<VerificationRequest | null>(null);
+
   const [activeTab, setActiveTab] = useState<VerificationStatus>("pending");
   // Remove useRouter import and handler
   // import { useRouter } from "next/navigation";
@@ -81,15 +74,10 @@ export function VerificationClient() {
       </Link>
     ));
   }
-  useEffect(() => {
-    loadRequests();
-  }, [activeTab]);
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchVerificationRequests(activeTab);
-
       setRequests(data);
     } catch (error) {
       console.error("Failed to fetch verification requests:", error);
@@ -97,27 +85,11 @@ export function VerificationClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
 
-  const handleStatusUpdate = async (
-    id: string,
-    status: VerificationStatus,
-    notes?: string
-  ) => {
-    try {
-      await updateVerificationStatus(id, status, notes);
-      toast.success(
-        `Request ${
-          status === "approved" ? "approved" : "rejected"
-        } successfully`
-      );
-      loadRequests();
-      setSelectedRequest(null);
-    } catch (error) {
-      console.error("Failed to update verification status:", error);
-      toast.error("Failed to update verification status");
-    }
-  };
+  useEffect(() => {
+    loadRequests();
+  }, [loadRequests]);
 
   // Remove selectedRequest state
   // const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);

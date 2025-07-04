@@ -3,19 +3,7 @@
 import { useAbility } from "@/lib/casl/AbilityContext";
 import { navigationItems } from "@/config/navigation";
 import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
-// import { useSession } from "next-auth/react"; // No longer needed here
+
 import type { User } from "next-auth"; // Import User type for the prop
 
 import { NavMain } from "@/components/nav-main";
@@ -32,7 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
-import { Actions, Subjects } from "@/lib/casl/ability";
+import { Subjects } from "@/lib/casl/ability";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: User;

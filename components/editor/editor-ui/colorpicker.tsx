@@ -22,18 +22,18 @@ type Props = {
   icon?: React.ReactNode;
   label?: string;
   title?: string;
-  stopCloseOnClickSelf?: boolean;
+  // stopCloseOnClickSelf?: boolean;
   color: string;
   onChange?: (color: string, skipHistoryStack: boolean) => void;
 };
 
 export default function ColorPicker({
   disabled = false,
-  stopCloseOnClickSelf = true,
+  // stopCloseOnClickSelf = true,
   color,
   onChange,
   icon,
-  label,
+  // label,
   ...rest
 }: Props) {
   return (

@@ -1,5 +1,5 @@
 // app/(jobs)/browse/page.tsx
-import { fetchJobs, getAllJobs } from "@/actions/job";
+import { getAllJobs } from "@/actions/job";
 import BrowseJobs from "./_components/browse-jobs";
 import { jobType } from "@/lib/types/models/job";
 

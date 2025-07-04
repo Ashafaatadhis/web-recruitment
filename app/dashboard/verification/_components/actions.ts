@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { recruiterVerificationSubmissions, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { VerificationStatus } from "@/types/verification-types";

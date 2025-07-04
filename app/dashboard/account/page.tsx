@@ -2,19 +2,27 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 
 import { ProfileClient } from "./_components/profile-client";
 import { AccountInfo } from "./_components/account-info";
 import { auth } from "@/auth";
 
+import { getUserById } from "@/actions/user/user";
+import { unauthorized } from "next/navigation";
+
 export default async function AccountPage() {
   const session = await auth();
+  if (!session?.user?.id) {
+    return unauthorized();
+  }
+  const user = await getUserById(session.user.id);
+  if (!user) {
+    return unauthorized();
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -28,9 +36,8 @@ export default async function AccountPage() {
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
 
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          {/* <TabsTrigger value="documents">Documents</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
@@ -42,48 +49,16 @@ export default async function AccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <ProfileClient />
+              <ProfileClient user={user} />
             </CardContent>
           </Card>
 
-          <AccountInfo user={session?.user!} />
+          <AccountInfo user={session?.user} />
         </TabsContent>
 
-        <TabsContent value="security" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Password</CardTitle>
-              <CardDescription>
-                Change your password or enable two-factor authentication.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Password management is not available for accounts that sign in
-                with Google.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline">Change password</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="preferences" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>
-                Manage your notification preferences and account settings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Preference settings will be available soon.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* <TabsContent value="documents" className="space-y-4">
+          <MyDocuments user={session?.user!} />
+        </TabsContent> */}
       </Tabs>
     </div>
   );

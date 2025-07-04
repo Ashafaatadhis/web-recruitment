@@ -1,8 +1,5 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-
 import {
   InputOTP,
   InputOTPGroup,

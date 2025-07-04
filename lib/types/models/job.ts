@@ -4,7 +4,6 @@ import {
   jobs,
   jobStatusEnum,
   jobTypeEnum,
-  users,
 } from "@/lib/db/schema";
 import { InferSelectModel } from "drizzle-orm";
 import { User } from "./user";

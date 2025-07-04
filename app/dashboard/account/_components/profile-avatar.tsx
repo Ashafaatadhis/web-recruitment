@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { useImageUpload } from "@/hooks/use-image-upload";
-import { deleteImage } from "@/lib/utils/image-upload";
+
 import { useTemporaryImageCleanup } from "@/hooks/use-temporary-image-cleanup";
 
 interface ProfileAvatarProps {

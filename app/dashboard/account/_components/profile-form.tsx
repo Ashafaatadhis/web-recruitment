@@ -14,41 +14,49 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { User } from "@/lib/types/models/user";
 
-// Define the form schema with Zod
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  location: z.string().optional(),
+  linkedInProfile: z.string().url().or(z.literal("")),
+  portfolioUrl: z.string().url().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 interface ProfileFormProps {
-  initialName: string;
-  initialEmail: string;
-  onSubmit: (name: string) => Promise<void>;
+  user: User;
+  onSubmit: (data: FormValues) => Promise<void>;
   hasAvatarChanges: boolean;
 }
 
 export function ProfileForm({
-  initialName,
-  initialEmail,
   onSubmit,
+  user,
   hasAvatarChanges,
 }: ProfileFormProps) {
-  // Initialize React Hook Form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialName,
-      email: initialEmail,
+      name: user.name ?? "",
+      email: user.email ?? "",
+      firstName: user.firstName ?? "",
+      lastName: user.lastName ?? "",
+      phoneNumber: user.phoneNumber ?? "",
+      location: user.location ?? "",
+      linkedInProfile: user.linkedInProfile ?? "",
+      portfolioUrl: user.portfolioUrl ?? "",
     },
   });
 
-  // Form submission handler
   const handleSubmit = async (data: FormValues) => {
     try {
-      await onSubmit(data.name);
+      await onSubmit(data);
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -58,7 +66,11 @@ export function ProfileForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit, (er) => console.log(er))}
+        className="space-y-4"
+      >
+        {/* NAME */}
         <FormField
           control={form.control}
           name="name"
@@ -73,6 +85,7 @@ export function ProfileForm({
           )}
         />
 
+        {/* EMAIL */}
         <FormField
           control={form.control}
           name="email"
@@ -85,6 +98,99 @@ export function ProfileForm({
               <p className="text-xs text-muted-foreground">
                 Your email address is used for login and cannot be changed.
               </p>
+            </FormItem>
+          )}
+        />
+
+        {/* FIRST NAME */}
+        <FormField
+          control={form.control}
+          name="firstName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>First Name</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="First name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* LAST NAME */}
+        <FormField
+          control={form.control}
+          name="lastName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Name</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Last name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* PHONE NUMBER */}
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="08xxxxxxxxxx" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* LOCATION */}
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="City, Country" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* LINKEDIN */}
+        <FormField
+          control={form.control}
+          name="linkedInProfile"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>LinkedIn Profile</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="https://linkedin.com/in/username"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* PORTFOLIO */}
+        <FormField
+          control={form.control}
+          name="portfolioUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Portfolio URL</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="https://yourportfolio.com" />
+              </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

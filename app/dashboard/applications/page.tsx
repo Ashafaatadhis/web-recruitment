@@ -1,6 +1,6 @@
 import { getApplicationsWithRelations } from "@/actions/application";
 import ApplicationsList from "./_components/application-list";
-import { jobType } from "@/lib/types/models/job";
+
 import { applicationStatus } from "@/lib/types/models/application";
 import { LimitSelector } from "@/components/limit-selector";
 import { Pagination } from "@/components/pagination";

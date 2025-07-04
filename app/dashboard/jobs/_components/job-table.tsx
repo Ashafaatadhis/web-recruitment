@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import Link from "next/link";
 import { format } from "date-fns";
 import { DeleteJobButton } from "../_components/delete-job-button";

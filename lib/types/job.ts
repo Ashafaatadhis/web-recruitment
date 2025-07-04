@@ -1,4 +1,3 @@
-import { jobStatusEnum } from "../db/schema";
 import { jobStatus, jobType } from "./models/job";
 
 export type JobQuestion = {
@@ -14,6 +13,8 @@ export type JobWithQuestions = {
 
 export type CreateApplicationInput = {
   jobId: string;
+  resumeUrl: string;
+  coverLetter: string;
   answers: { questionId: string; answer: string }[];
 };
 

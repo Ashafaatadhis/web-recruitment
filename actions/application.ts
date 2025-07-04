@@ -173,6 +173,8 @@ export async function createApplication(input: CreateApplicationInput) {
       .insert(applications)
       .values({
         jobId: input.jobId,
+        resumeUrl: input.resumeUrl,
+        coverLetter: input.coverLetter,
         applicantUserId: userId,
       })
       .returning({ id: applications.id });

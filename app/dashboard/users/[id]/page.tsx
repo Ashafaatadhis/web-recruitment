@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { getUserById } from "@/actions/user/user";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
   params: Promise<{
@@ -106,7 +107,7 @@ export default async function UserDetailPage(props: Props) {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" asChild>
-              <a href="/dashboard/users">Kembali</a>
+              <Link href="/dashboard/users">Kembali</Link>
             </Button>
             {/* Tombol edit bisa ditambahkan di sini */}
             {/* <Button>Edit</Button> */}

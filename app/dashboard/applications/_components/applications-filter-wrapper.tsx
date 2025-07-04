@@ -16,7 +16,6 @@ export default function ApplicationsFilterWrapper({
     status: searchParams?.get("status") || "all",
     search: searchParams?.get("search") || "",
   });
-
   const handleApply = useCallback(
     (newFilters: typeof filters) => {
       setFilters(newFilters);
@@ -34,7 +33,7 @@ export default function ApplicationsFilterWrapper({
 
       router.push(`${route}?${params.toString()}`);
     },
-    [router] // pastikan router masuk dependency
+    [router, route] // tambahkan 'route' di sini
   );
 
   return (

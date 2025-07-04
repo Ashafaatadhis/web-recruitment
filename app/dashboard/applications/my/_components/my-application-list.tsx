@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { ApplicationWithRelations } from "@/lib/types/models/application";
 import { format } from "date-fns";
-import { CheckCircle, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,

@@ -35,7 +35,7 @@ export function Pagination({
       }
     }
 
-    for (let i of range) {
+    for (const i of range) {
       if (l !== null) {
         if (i - l === 2) {
           rangeWithDots.push(l + 1);
@@ -46,7 +46,6 @@ export function Pagination({
       rangeWithDots.push(i);
       l = i;
     }
-
     return rangeWithDots;
   }
 

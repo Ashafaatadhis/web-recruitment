@@ -1,8 +1,5 @@
 import nodemailer from "nodemailer";
 import { generateJWT } from "./jwt";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 export const generateNumericCode = async (length: number) => {
   let code = "";

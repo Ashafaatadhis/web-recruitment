@@ -11,8 +11,8 @@
 // in flow itself, so we can't name it anything else.
 export function invariant(
   cond?: boolean,
-  message?: string,
-  ...args: string[]
+  message?: string
+  // ...args: string[]
 ): asserts cond {
   if (cond) {
     return;

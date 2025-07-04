@@ -67,6 +67,7 @@ export default function EditJobForm({ job }: { job: JobWithRelations }) {
       toast.success("Job updated successfully!");
       router.push("/dashboard/jobs");
     } catch (err) {
+      console.log(err);
       toast.error("Failed to update job. Please try again.");
     }
   };

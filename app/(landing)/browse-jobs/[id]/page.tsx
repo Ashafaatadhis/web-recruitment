@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import JobRichTextViewer from "@/components/job-rich-text-viewer";
 import { getJobById } from "@/actions/job";
+import { checkIfUserAppliedToJob } from "@/actions/application";
 
-export default async function JobDetailPage(
-  props: {
-    params: Promise<{ id: string }>;
-  }
-) {
+export default async function JobDetailPage(props: {
+  params: Promise<{ id: string }>;
+}) {
   const params = await props.params;
   const job = await getJobById(params.id);
+  const application = await checkIfUserAppliedToJob(params.id);
 
   if (!job) {
     return (
@@ -63,11 +63,22 @@ export default async function JobDetailPage(
               <JobRichTextViewer serialized={job.requirements} />
             </div>
           )}
-          <Button variant="default" asChild className="mt-4">
-            <Link href={`/dashboard/applications/apply/${job.id}`}>
-              Apply Now
-            </Link>
-          </Button>
+
+          {application ? (
+            <div className="mt-4">
+              <Button variant="default" asChild className="mt-4">
+                <Link href={`/dashboard/applications/my`}>
+                  View My Applications
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <Button variant="default" asChild className="mt-4">
+              <Link href={`/dashboard/applications/apply/${job.id}`}>
+                Apply Now
+              </Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

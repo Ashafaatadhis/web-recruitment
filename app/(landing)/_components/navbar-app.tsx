@@ -17,16 +17,8 @@ export function NavbarApp() {
   const { data: session } = useSession();
   const navItems = [
     {
-      name: "Features",
-      link: "#features",
-    },
-    {
-      name: "Pricing",
-      link: "#pricing",
-    },
-    {
-      name: "Contact",
-      link: "#contact",
+      name: "Browse Jobs",
+      link: "/browse-jobs",
     },
   ];
 
@@ -51,7 +43,11 @@ export function NavbarApp() {
             <NavbarButton variant="secondary" onClick={handleAuthClick}>
               {session ? "Logout" : "Login"}
             </NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
+            {session && (
+              <NavbarButton href={"/dashboard"} variant="primary">
+                Dashboard
+              </NavbarButton>
+            )}
           </div>
         </NavBody>
 
