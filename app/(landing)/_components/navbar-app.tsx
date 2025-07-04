@@ -77,19 +77,25 @@ export function NavbarApp() {
             ))}
             <div className="flex w-full flex-col gap-4">
               <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleAuthClick();
+                }}
                 variant="primary"
                 className="w-full"
               >
-                Login
+                {session ? "Logout" : "Login"}
               </NavbarButton>
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Book a call
-              </NavbarButton>
+              {session && (
+                <NavbarButton
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  variant="primary"
+                  className="w-full"
+                >
+                  Dashboard
+                </NavbarButton>
+              )}
             </div>
           </MobileNavMenu>
         </MobileNav>
