@@ -71,11 +71,20 @@ export const registerUser = async (data: RegisterData) => {
           .where(eq(users.id, existingUser.id));
 
         // Send the verification email without waiting
-        sendVerificationEmail(
-          data.email,
-          verificationCode,
-          existingUser.id
-        ).catch((error) => console.error("Email sending failed:", error));
+        // sendVerificationEmail(
+        //   data.email,
+        //   verificationCode,
+        //   existingUser.id
+        // ).catch((error) => console.error("Email sending failed:", error));
+        try {
+          await sendVerificationEmail(
+            data.email,
+            verificationCode,
+            existingUser.id
+          );
+        } catch (error) {
+          console.error("Email sending failed:", error);
+        }
 
         return {
           status: true,
