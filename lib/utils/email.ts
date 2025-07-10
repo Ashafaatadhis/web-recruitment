@@ -50,5 +50,10 @@ export const sendVerificationEmail = async (
       pass: process.env.SMTP_PASS,
     },
   });
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("✅ Email sent to:", email);
+  } catch (error) {
+    console.error("❌ Failed to send email:", error);
+  }
 };
