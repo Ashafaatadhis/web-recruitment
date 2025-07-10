@@ -14,7 +14,7 @@ export const sendVerificationEmail = async (
   userId: string
 ) => {
   const token = generateJWT(userId);
-  const verificationLink = `http://localhost:3000/verify-token?token=${token}`;
+  const verificationLink = `${process.env.BASE_URL}/verify-token?token=${token}`;
 
   const mailOptions = {
     from: process.env.SMTP_USER,
@@ -44,7 +44,7 @@ export const sendVerificationEmail = async (
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
-    secure: false, // Use false for port 587
+    secure: process.env.NODE_ENV === "production",
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
