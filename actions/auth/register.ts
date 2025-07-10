@@ -5,7 +5,6 @@ import { users, accounts } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { AdapterAccountType } from "next-auth/adapters";
-
 import { generateNumericCode, sendVerificationEmail } from "@/lib/utils/email";
 
 type RegisterData = {
@@ -17,26 +16,24 @@ type RegisterData = {
 
 export const registerUser = async (data: RegisterData) => {
   try {
-    // Start a transaction
     await db.transaction(async (trx) => {
-      // Check if a user with this email already exists
       const existingUser = await trx.query.users.findFirst({
         where: eq(users.email, data.email),
-        with: {
-          accounts: true,
-        },
+        with: { accounts: true },
       });
+
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
+      let userId: string;
 
       if (existingUser) {
         const hasCredentialsProvider = existingUser.accounts.some(
-          (account) => account.provider === "credentials"
+          (acc) => acc.provider === "credentials"
         );
 
         if (hasCredentialsProvider) {
           throw new Error("Email already registered with password");
         }
-
-        const hashedPassword = await bcrypt.hash(data.password, 10);
 
         await trx
           .update(users)
@@ -52,88 +49,49 @@ export const registerUser = async (data: RegisterData) => {
           type: "credentials" as AdapterAccountType,
           provider: "credentials",
           providerAccountId: existingUser.id,
-          refresh_token: null,
-          access_token: null,
-          expires_at: null,
-          token_type: null,
-          scope: null,
-          id_token: null,
-          session_state: null,
         });
 
-        // Generate a numeric verification code
-        const verificationCode = await generateNumericCode(6);
+        userId = existingUser.id;
+      } else {
+        const [createdUser] = await trx
+          .insert(users)
+          .values({
+            email: data.email,
+            name: data.name,
+            username: data.username,
+            password: hashedPassword,
+          })
+          .returning();
 
-        // Store the verification code in the database
-        await trx
-          .update(users)
-          .set({ verificationToken: verificationCode })
-          .where(eq(users.id, existingUser.id));
-
-        // Send the verification email without waiting
-        // sendVerificationEmail(
-        //   data.email,
-        //   verificationCode,
-        //   existingUser.id
-        // ).catch((error) => console.error("Email sending failed:", error));
-        try {
-          await sendVerificationEmail(
-            data.email,
-            verificationCode,
-            existingUser.id
-          );
-        } catch (error) {
-          console.error("Email sending failed:", error);
+        if (!createdUser) {
+          throw new Error("Failed to create user");
         }
 
-        return {
-          status: true,
-          message: "Account linked to existing Google login",
-        };
+        userId = createdUser.id;
+
+        await trx.insert(accounts).values({
+          userId: createdUser.id,
+          type: "credentials" as AdapterAccountType,
+          provider: "credentials",
+          providerAccountId: createdUser.id,
+        });
       }
 
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      const [createdUser] = await trx
-        .insert(users)
-        .values({
-          email: data.email,
-          name: data.name,
-          username: data.username,
-          password: hashedPassword,
-        })
-        .returning();
-
-      if (!createdUser) {
-        throw new Error("Failed to create user");
-      }
-
-      await trx.insert(accounts).values({
-        userId: createdUser.id,
-        type: "credentials" as AdapterAccountType,
-        provider: "credentials",
-        providerAccountId: createdUser.id,
-        refresh_token: null,
-        access_token: null,
-        expires_at: null,
-        token_type: null,
-        scope: null,
-        id_token: null,
-        session_state: null,
-      });
-
-      // Generate a numeric verification code
+      // Generate and save verification code
       const verificationCode = await generateNumericCode(6);
-
-      // Store the verification code in the database
       await trx
         .update(users)
         .set({ verificationToken: verificationCode })
-        .where(eq(users.id, createdUser.id));
+        .where(eq(users.id, userId));
 
-      // Send the verification email without waiting
-      sendVerificationEmail(data.email, verificationCode, createdUser.id).catch(
-        (error) => console.error("Email sending failed:", error)
-      );
+      // Send email (always await!)
+      try {
+        await sendVerificationEmail(data.email, verificationCode, userId);
+        console.log("✅ Email sent to", data.email);
+      } catch (err) {
+        console.error("❌ Email sending failed:", err);
+        throw new Error("Email sending failed");
+      }
     });
 
     return {
@@ -142,7 +100,7 @@ export const registerUser = async (data: RegisterData) => {
         "Registration successful. Please check your email for a verification code.",
     };
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("❌ Registration error:", error);
     return {
       status: false,
       error:
