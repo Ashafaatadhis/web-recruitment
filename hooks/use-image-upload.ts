@@ -1,4 +1,4 @@
-import { deleteImage, uploadImage } from "@/lib/utils/image-upload";
+import { uploadImage } from "@/lib/utils/image-upload";
 import { useState } from "react";
 
 export function useImageUpload(onSuccess: (url: string) => void) {
@@ -6,7 +6,7 @@ export function useImageUpload(onSuccess: (url: string) => void) {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleUpload = async (file: File, oldUrl?: string) => {
+  const handleUpload = async (file: File, location: string) => {
     setIsUploading(true);
 
     try {
@@ -15,7 +15,7 @@ export function useImageUpload(onSuccess: (url: string) => void) {
         const result = event.target?.result as string;
         setPreviewImage(result);
 
-        const newUrl = await uploadImage(file);
+        const newUrl = await uploadImage(file, location);
 
         setUploadedImageUrl(newUrl);
         onSuccess(newUrl);

@@ -1,34 +1,45 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import fs from "node:fs/promises";
-import path from "node:path";
-import crypto from "node:crypto";
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-
     const file = formData.get("file") as File;
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
+    const location = formData.get("location") as string;
 
-    // Ambil extension file
-    const ext = path.extname(file.name);
-    // Generate random string unik
-    const randomStr = crypto.randomBytes(8).toString("hex");
-    // Buat nama file baru: random + extension
-    const uniqueFileName = `${randomStr}${ext}`;
+    if (!file) {
+      return NextResponse.json(
+        { status: "fail", message: "No file uploaded" },
+        { status: 400 }
+      );
+    }
 
-    await fs.writeFile(`./public/uploads/${uniqueFileName}`, buffer);
+    const proxyForm = new FormData();
+    proxyForm.append("file", file);
+    proxyForm.append("location", "winnicode/" + location); // sesuai format backend-mu
 
-    revalidatePath("/");
+    const uploadRes = await fetch(
+      "https://be-brevet.tcugapps.com/api/v1/upload/images",
+      {
+        method: "POST",
+        body: proxyForm,
+      }
+    );
+
+    const result = await uploadRes.json();
+
+    if (!uploadRes.ok) {
+      throw new Error(result?.message || "Upload failed");
+    }
 
     return NextResponse.json({
       status: "success",
-      url: `/uploads/${uniqueFileName}`,
+      url: result.data, // Pastikan backend return { url: "https://cdn.tcugapps.com/..." }
     });
   } catch (e) {
-    console.error(e);
-    return NextResponse.json({ status: "fail", error: e });
+    console.error("Upload error:", e);
+    return NextResponse.json(
+      { status: "fail", error: `${e}` },
+      { status: 500 }
+    );
   }
 }

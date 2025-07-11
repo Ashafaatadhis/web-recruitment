@@ -45,7 +45,8 @@ export function ProfileClient({ user }: { user: User }) {
     const newImage = temporaryImage;
 
     setTemporaryImage(null);
-    // console.log(newImage, "TAII TAI");
+    const oldImage = session?.user?.image;
+
     const result = await updateUserProfile({
       id: session?.user?.id,
       name: data.name,
@@ -57,15 +58,20 @@ export function ProfileClient({ user }: { user: User }) {
       linkedinProfile: data.linkedinProfile,
       portfolioUrl: data.portfolioUrl,
     });
-    console.log(result.error);
+
     if (!result.error) {
       await update({ user: { name: data.name, image: newImage } });
+      if (oldImage) {
+        await deleteImage(oldImage);
+      }
     }
   };
 
   const handleAvatarChange = (url: string) => {
-    console.log(url, "allah");
-    if (temporaryImage) deleteImage(temporaryImage);
+    if (temporaryImage) {
+      console.log(temporaryImage, "KRIKK");
+      deleteImage(temporaryImage);
+    }
     setTemporaryImage(url);
   };
 

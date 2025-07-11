@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UploadCloud } from "lucide-react";
 import { toast } from "sonner";
@@ -20,11 +20,9 @@ export function ProfileAvatar({
   userName = "",
 }: ProfileAvatarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [oldImageUrl, setOldImageUrl] = useState(currentImage);
 
   const { previewImage, isUploading, uploadedImageUrl, handleUpload } =
     useImageUpload((url) => {
-      setOldImageUrl(url);
       onImageChange(url);
       toast.success("Image uploaded successfully!");
     });
@@ -34,7 +32,7 @@ export function ProfileAvatar({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    handleUpload(file, oldImageUrl);
+    handleUpload(file, "profile");
   };
 
   useTemporaryImageCleanup(uploadedImageUrl);
